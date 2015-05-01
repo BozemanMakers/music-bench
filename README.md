@@ -1,2 +1,1 @@
-# music-bench
-An Arduino + MP3 Shield musical bench project
+# An Arduino + MP3 Shield musical bench project
