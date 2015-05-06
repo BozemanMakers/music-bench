@@ -39,14 +39,14 @@ int mp3StartingTrack = 5;
 /** Calibration min/max of analog sensor
     This is only used if playback mode (2)
 	TO-DO: once the bench is completed we need to calibrate these settings */
-int sensorMin = 300;
-int sensorMax = 600;
-int sensorStopPlayback = 601;
+int sensorMin = 20;
+int sensorMax = 999;
+int sensorStopPlayback = 1000;
 
 /* Set default MAX volumn here
    MP3 Player volume 0=max, 255=lowest (off)
    Defaulting to a bit lower, because the speakers will go to 11 ;) */
-const uint8_t volume = 150; 
+const uint8_t volume = 10; 
 const uint16_t monoMode = 1;  // Mono setting 0=off, 3=max
 
 /* Pin setups */
@@ -54,11 +54,13 @@ int pinTrigger = A0; // Trigger pin on the MP3 Shield which when triggered will 
 int pinTriggerValue; // used to store the analog sensor value (touching hands)
 
 /* Used to smooth analog input */
-const int numReadings = 50;
+const int numReadings = 10;
 int readings[numReadings];      // the readings from the analog input
 int readIndex = 0;              // the index of the current reading
-int total = 1024;               // the running total
+int total = 0;               // the running total
 int average = 0;                // the average
+
+int isPlaying = 0;
 
 /* Setup the required libraries */
 SdFat sd;
@@ -135,21 +137,21 @@ void initMP3Player()
 	Playback Modes
 */
 void playbackMode_randomTrack(int minTrack, int maxTrack) {
-    if(average > sensorMin && average < sensorMax) {
-
+    Serial.println(MP3player.isPlaying());
+  if(average > sensorMin && average < sensorMax) {
       // Play track a random track #minTrack-maxTrack
 	  // We need to add +1 to the maxTrack for the random function to do what we want
       // notes: http://www.arduino.cc/en/Reference/random
-      int myRandomtrack = random(minTrack,maxTrack+1);
-
-	  // TO-DO: still not tested this, but I believe this should work. This should allow the previous playing track to finish before moving on
-      if (MP3player.isPlaying() != 1) {
-        if(debugMode) { Serial.print("Playback: Track("); Serial.print(myRandomtrack); Serial.println(")"); delay(1); }
+      if(MP3player.isPlaying() == 0) {
+        int myRandomtrack = random(minTrack,maxTrack+1);
         uint8_t result = MP3player.playTrack(myRandomtrack);
+        isPlaying=1;
+        if(debugMode) { Serial.print("Playback: Track("); Serial.print(myRandomtrack); Serial.println(")"); delay(1); }
       }
-    } else {
-      MP3player.stopTrack();
-    }
+   } else {
+        MP3player.stopTrack();
+        isPlaying=0;
+   }
 
 }
 
